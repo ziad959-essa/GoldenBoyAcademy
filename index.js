@@ -16,6 +16,7 @@
     { ar: "الفروع والمواعيد", en: "Branches & schedule", id: "schedule" },
     { ar: "عن الأونر", en: "About the owner", id: "owner" },
     { ar: "الإنجازات", en: "Achievements", id: "achievements" },
+    { ar: "سجّل كمدير", en: "Admin login", href: "admin.html", admin: true },
     { ar: "تسجيل لاعب", en: "Register", id: "register" },
     { ar: "متابعة اللاعب", en: "Athlete portal", id: "player" },
     { ar: "تواصل معنا", en: "Contact", id: "contact" },
@@ -138,7 +139,7 @@
     if (header) {
       header.innerHTML = `<header class="site-header"><div class="container header-inner">
         <a class="brand" href="#home" aria-label="Golden Boy Academy home"><span class="brand-mark"><img src="assets/golden-boy-logo.jpeg" alt=""></span><span class="brand-copy"><strong>GOLDEN BOY</strong><span>ACADEMY • EL MAHALLA</span></span></a>
-        <nav class="main-nav" id="main-navigation" aria-label="Main navigation">${navigation.map((item) => `<a href="#${item.id}" data-view-link="${item.id}" data-ar="${item.ar}" data-en="${item.en}">${item.ar}</a>`).join("")}</nav>
+        <nav class="main-nav" id="main-navigation" aria-label="Main navigation">${navigation.map((item) => `<a${item.admin ? ' class="admin-nav-link"' : ""} href="${item.href || `#${item.id}`}"${item.id ? ` data-view-link="${item.id}"` : ""}${item.admin ? ` aria-label="${item.ar}"` : ` data-ar="${item.ar}" data-en="${item.en}"`}>${item.admin ? `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v11H5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="15" r="1" fill="currentColor"/></svg><span data-ar="${item.ar}" data-en="${item.en}">${item.ar}</span>` : item.ar}</a>`).join("")}</nav>
         <div class="header-actions"><button class="theme-toggle" id="theme-toggle" type="button" aria-label="تبديل المظهر">☀</button><button class="language-toggle" id="language-toggle" type="button" aria-label="Switch language">EN / ع</button><button class="menu-toggle" id="menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">☰</button></div>
       </div></header>`;
     }
