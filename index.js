@@ -14,7 +14,7 @@
   const navigation = [
     { ar: "الرئيسية", en: "Home", id: "home" },
     { ar: "الفروع والمواعيد", en: "Branches & schedule", id: "schedule" },
-    { ar: "عن الأونر", en: "About the owner", id: "owner" },
+    { ar: "Owner", en: "Owner", id: "owner" },
     { ar: "الإنجازات", en: "Achievements", id: "achievements" },
     { ar: "سجّل كمدير", en: "Admin login", href: "admin.html", admin: true },
     { ar: "تسجيل لاعب", en: "Register", id: "register" },
@@ -73,7 +73,7 @@
   const pageTitles = {
     home: { ar: "أكاديمية جولدن بوي | الرئيسية", en: "Golden Boy Academy | Home" },
     schedule: { ar: "الفروع والمواعيد | أكاديمية جولدن بوي", en: "Branches & schedules | Golden Boy Academy" },
-    owner: { ar: "عن الأونر | جولدن بوي", en: "About the owner | Golden Boy Academy" },
+    owner: { ar: "عن القائد | جولدن بوي", en: "About the owner | Golden Boy Academy" },
     achievements: { ar: "إنجازات اللاعبين | أكاديمية جولدن بوي", en: "Athlete achievements | Golden Boy Academy" },
     register: { ar: "تسجيل لاعب | أكاديمية جولدن بوي", en: "Athlete registration | Golden Boy Academy" },
     player: { ar: "متابعة اللاعب | أكاديمية جولدن بوي", en: "Athlete portal | Golden Boy Academy" },
@@ -140,13 +140,13 @@
       header.innerHTML = `<header class="site-header"><div class="container header-inner">
         <a class="brand" href="#home" aria-label="Golden Boy Academy home"><span class="brand-mark"><img src="assets/golden-boy-logo.jpeg" alt=""></span><span class="brand-copy"><strong>GOLDEN BOY</strong><span>ACADEMY • EL MAHALLA</span></span></a>
         <nav class="main-nav" id="main-navigation" aria-label="Main navigation">${navigation.map((item) => `<a${item.admin ? ' class="admin-nav-link"' : ""} href="${item.href || `#${item.id}`}"${item.id ? ` data-view-link="${item.id}"` : ""}${item.admin ? ` aria-label="${item.ar}"` : ` data-ar="${item.ar}" data-en="${item.en}"`}>${item.admin ? `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v11H5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="15" r="1" fill="currentColor"/></svg><span data-ar="${item.ar}" data-en="${item.en}">${item.ar}</span>` : item.ar}</a>`).join("")}</nav>
-        <div class="header-actions"><button class="theme-toggle" id="theme-toggle" type="button" aria-label="تبديل المظهر">☀</button><button class="language-toggle" id="language-toggle" type="button" aria-label="Switch language">EN / ع</button><button class="menu-toggle" id="menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">☰</button></div>
+        <div class="header-actions"><a class="portfolio-nav-link" href="https://ziad-essa.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Ziad Essa portfolio"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-13Z" stroke="currentColor" stroke-width="1.6"/><path d="M8 16.5h8M8 13h8M8 9.5h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>Ziad Essa</span></a><button class="theme-toggle" id="theme-toggle" type="button" aria-label="تبديل المظهر">☀</button><button class="language-toggle" id="language-toggle" type="button" aria-label="Switch language">EN / ع</button><button class="menu-toggle" id="menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">☰</button></div>
       </div></header>`;
     }
     if (footer) footer.innerHTML = `<footer class="site-footer"><div class="container footer-inner">
       <a class="brand" href="#home"><span class="brand-mark"><img src="assets/golden-boy-logo.jpeg" alt=""></span><span class="brand-copy"><strong>GOLDEN BOY</strong><span>ACADEMY</span></span></a>
       <span class="footer-copy">أكاديمية جولدن بوي للألعاب القتالية واللياقة • المحلة الكبرى</span>
-      <div class="footer-links"><a href="#schedule">الفروع والمواعيد</a><a href="#owner">عن الأونر</a><a href="#achievements">الإنجازات</a><a href="#contact">تواصل معنا</a></div>
+      <div class="footer-links"><a href="#schedule">الفروع والمواعيد</a><a href="#owner">Owner</a><a href="#achievements">الإنجازات</a><a href="#contact">تواصل معنا</a><a href="https://ziad-essa.vercel.app/" target="_blank" rel="noopener noreferrer">تطوير وتصميم بواسطة Ziad Essa</a></div>
     </div></footer>`;
   }
   function applyLanguage() {
@@ -229,13 +229,18 @@
   async function submitApplication(form) {
     if (!supabaseClient) throw new Error(labels[language].connection);
     const data = new FormData(form);
+    const paymentMethod = String(data.get("paymentMethod") || "");
+    const paymentReceipt = form.elements.paymentReceipt.files[0];
+    if (paymentMethod && !paymentReceipt) {
+      throw new Error(language === "ar" ? "أرفق صورة إيصال التحويل لإتمام التسجيل." : "Attach the transfer receipt to complete registration.");
+    }
     const id = crypto.randomUUID();
     const photoPath = await uploadPrivateFile(form.elements.athletePhoto.files[0], id, "athlete-photo", MAX_IMAGE_SIZE);
     let certificatePath;
-    let receiptPath;
+    let receiptPath = null;
     try {
       certificatePath = await uploadPrivateFile(form.elements.certificate.files[0], id, "birth-certificate", MAX_DOCUMENT_SIZE);
-      receiptPath = await uploadPrivateFile(form.elements.paymentReceipt.files[0], id, "payment-receipt", MAX_DOCUMENT_SIZE);
+      if (paymentReceipt) receiptPath = await uploadPrivateFile(paymentReceipt, id, "payment-receipt", MAX_DOCUMENT_SIZE);
       const sessionValue = String(data.get("group") || "");
       const session = sessionValue === "other" ? null : sessions.find((item) => `${item.dayKey}|${item.time}` === sessionValue && item.sport === data.get("sport") && item.branch === data.get("branch"));
       const record = {
@@ -253,7 +258,7 @@
         proposed_session: sessionValue === "other" ? String(data.get("customGroup")).trim() : null,
         athlete_photo_path: photoPath,
         certificate_path: certificatePath,
-        payment_method: data.get("paymentMethod") || null,
+        payment_method: paymentMethod || null,
         payment_reference: String(data.get("paymentReference") || "").trim() || null,
         payment_receipt_path: receiptPath,
         status: "pending",
@@ -264,9 +269,62 @@
       throw error;
     }
   }
+  function setupPaymentDestination(form) {
+    const destinations = {
+      instapay: "01024667991",
+      vodafone_cash: "01024667991",
+    };
+    const method = form.elements.paymentMethod;
+    const destination = document.getElementById("payment-destination");
+    const value = document.getElementById("payment-destination-value");
+    const copyButton = document.getElementById("copy-payment-destination");
+    const copyMessage = document.getElementById("payment-copy-message");
+    const referenceField = document.getElementById("payment-reference-field");
+    const receiptField = document.getElementById("payment-receipt-field");
+    const receiptInput = form.elements.paymentReceipt;
+    const receiptRequiredMarker = document.getElementById("payment-receipt-required-marker");
+    if (!method || !destination || !value || !copyButton || !copyMessage || !referenceField || !receiptField || !receiptInput || !receiptRequiredMarker) return;
+
+    function updateDestination() {
+      const selectedDestination = destinations[method.value];
+      const electronicPaymentSelected = Boolean(selectedDestination);
+      destination.hidden = !selectedDestination;
+      value.textContent = selectedDestination ? "010 24667991" : "";
+      copyButton.dataset.copyValue = selectedDestination || "";
+      copyMessage.textContent = "";
+      referenceField.hidden = !electronicPaymentSelected;
+      receiptField.hidden = !electronicPaymentSelected;
+      receiptInput.required = electronicPaymentSelected;
+      receiptRequiredMarker.hidden = !electronicPaymentSelected;
+      if (!electronicPaymentSelected) {
+        form.elements.paymentReference.value = "";
+        receiptInput.value = "";
+      }
+    }
+
+    method.addEventListener("change", updateDestination);
+    copyButton.addEventListener("click", async () => {
+      const textToCopy = copyButton.dataset.copyValue;
+      if (!textToCopy) return;
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+        copyMessage.textContent = language === "ar" ? "تم النسخ." : "Copied.";
+      } catch (error) {
+        console.error("Could not copy payment destination", error);
+        copyMessage.textContent = language === "ar"
+          ? "تعذر النسخ تلقائيًا؛ اضغط مطولًا على الرقم لتحديده ونسخه."
+          : "Copy failed. Select and copy the number manually.";
+      }
+    });
+    updateDestination();
+    form.addEventListener("reset", () => {
+      window.setTimeout(updateDestination, 0);
+    });
+  }
   function setupRegistration() {
     const form = document.getElementById("registration-form");
     if (!form) return;
+    setupPaymentDestination(form);
     form.elements.sport.addEventListener("change", refreshRegistrationGroups);
     form.elements.branch.addEventListener("change", refreshRegistrationGroups);
     form.elements.group.addEventListener("change", refreshRegistrationGroups);
@@ -559,7 +617,23 @@
   }
   function setupMediaPlaceholders() {
     const ownerProfile = document.querySelector("#owner .owner-profile");
-    if (ownerProfile) ownerProfile.insertAdjacentHTML("afterend", `<section class="media-placeholder"><div><p class="eyebrow" data-ar="فيديو الأونر" data-en="OWNER VIDEO">فيديو الأونر</p><h2 data-ar="قصة الأونر من قلب الأكاديمية" data-en="The owner's story from the academy">قصة الأونر من قلب الأكاديمية</h2></div><video class="academy-video" controls playsinline preload="metadata" poster="assets/academy-owner.jpeg"><source src="assets/owner-story.mp4" type="video/mp4">متصفحك لا يدعم تشغيل الفيديو.</video></section><section class="testimonial-placeholder"><p class="eyebrow" data-ar="كلمات من المجتمع" data-en="COMMUNITY TESTIMONIALS">كلمات من المجتمع</p><h2 data-ar="شهادات اللاعبين وأولياء الأمور" data-en="Athlete and parent testimonials">شهادات اللاعبين وأولياء الأمور</h2><p data-ar="أرسل شهادات اللاعبين وأولياء الأمور بعد أخذ موافقتهم لإضافتها هنا." data-en="Send athlete and parent testimonials after obtaining their consent to add them here.">أرسل شهادات اللاعبين وأولياء الأمور بعد أخذ موافقتهم لإضافتها هنا.</p></section>`);
+    const leaderCertificates = [
+      "assets/leader-certificates/leader-certificate-01.jpeg",
+      "assets/leader-certificates/leader-certificate-03.jpeg",
+      "assets/leader-certificates/leader-certificate-04.jpeg",
+      "assets/leader-certificates/leader-certificate-05.jpeg",
+      "assets/leader-certificates/leader-certificate-06.jpeg",
+      "assets/leader-certificates/leader-certificate-07.jpeg",
+      "assets/leader-certificates/leader-certificate-08.jpeg",
+      "assets/leader-certificates/leader-certificate-09.jpeg",
+      "assets/leader-certificates/leader-certificate-10.jpeg",
+      "assets/leader-certificates/leader-certificate-11.jpeg",
+    ];
+    const certificateCards = leaderCertificates.map((image) => `
+      <button class="achievement-photo-card leader-certificate-card" type="button" data-achievement-image="${image}" data-achievement-alt-ar="شهادة من شهادات قائد الأكاديمية" data-achievement-alt-en="A certificate from the academy leader">
+        <img src="${image}" alt="شهادة من شهادات قائد الأكاديمية" loading="lazy">
+      </button>`).join("");
+    if (ownerProfile) ownerProfile.insertAdjacentHTML("afterend", `<section class="media-placeholder"><div><p class="eyebrow" data-ar="فيديو القائد" data-en="OWNER VIDEO">فيديو القائد</p><h2 data-ar="قصة القائد من قلب الأكاديمية" data-en="The owner's story from the academy">قصة القائد من قلب الأكاديمية</h2></div><video class="academy-video" controls playsinline preload="metadata" poster="assets/academy-owner.jpeg"><source src="assets/owner-story.mp4" type="video/mp4">متصفحك لا يدعم تشغيل الفيديو.</video></section><section class="owner-certificates" aria-labelledby="owner-certificates-title"><div class="section-heading"><div><p class="eyebrow" data-ar="المسيرة والخبرة" data-en="EXPERIENCE & CREDENTIALS">المسيرة والخبرة</p><h2 id="owner-certificates-title" data-ar="شهادات القائد" data-en="Leader's Certificates">شهادات القائد</h2></div></div><div class="owner-certificates-grid">${certificateCards}</div></section>`);
     const achievementGrid = document.querySelector("#achievements .achievement-grid");
     if (achievementGrid) {
       achievementGrid.insertAdjacentHTML("beforebegin", `<section class="achievement-video-panel"><p class="eyebrow" data-ar="فيديو الإنجاز • العرض الأول" data-en="ACHIEVEMENT VIDEO • PREMIERE">فيديو الإنجاز • العرض الأول</p><h2 data-ar="لحظات من رحلة الأبطال" data-en="Highlights from our champions' journey">لحظات من رحلة الأبطال</h2><video class="academy-video" controls playsinline preload="metadata" poster="assets/world-podium-team.jpeg"><source src="assets/achievement-opening.mp4" type="video/mp4">متصفحك لا يدعم تشغيل الفيديو.</video></section>`);

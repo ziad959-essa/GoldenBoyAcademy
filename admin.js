@@ -6,7 +6,6 @@
     ? window.supabase.createClient(config.url, config.anonKey)
     : null;
   const bucket = "player-private";
-  const adminEmail = "saifahmed313131@gmail.com";
   const translations = {
     ar: {
       connection: "أضف رابط Supabase والمفتاح العام في supabase-config.js أولًا.",
@@ -18,6 +17,7 @@
       phone: "الهاتف", nationalId: "الرقم القومي", age: "السن", birthDate: "الميلاد",
       group: "الموعد", experience: "خبرة سابقة", payment: "الدفع", reference: "مرجع الدفع",
       submitted: "تاريخ التقديم", review: "التقييم الشهري (من 5)",
+      branch: "الفرع",
       note: "ملاحظة التقييم", saveReview: "حفظ التقييم", lastReview: "آخر تقييم",
       reviewSaved: "تم حفظ التقييم الشهري.", reviewFailed: "تعذر حفظ التقييم.",
       approvedMessage: "تم قبول طلب التسجيل في أكاديمية جولدن بوي. سنتواصل معكم قريبًا لتأكيد المجموعة.",
@@ -34,6 +34,7 @@
       phone: "Phone", nationalId: "National ID", age: "Age", birthDate: "Birth date",
       group: "Session", experience: "Prior experience", payment: "Payment", reference: "Payment reference",
       submitted: "Submitted", review: "Monthly review (out of 5)",
+      branch: "Branch",
       note: "Review note", saveReview: "Save review", lastReview: "Latest review",
       reviewSaved: "Monthly review saved.", reviewFailed: "Could not save the review.",
       approvedMessage: "Your application to Golden Boy Academy has been approved. We will contact you shortly to confirm your group.",
@@ -53,15 +54,19 @@
     fitness: { ar: "لياقة بدنية", en: "Fitness" },
   };
   const branches = {
-    popular1: "الشعبية 1", popular2: "الشعبية 2", popular3: "الشعبية 3",
-    mashma1: "المشحمة 1", mashma2: "المشحمة 2", sevenGirls: "السبع بنات",
-    club23: "نادي 23 يوليو",
+    popular1: { ar: "الشعبية 1", en: "Popular 1" },
+    popular2: { ar: "الشعبية 2", en: "Popular 2" },
+    popular3: { ar: "الشعبية 3", en: "Popular 3" },
+    mashma1: { ar: "المشحمة 1", en: "Al-Mashma 1" },
+    mashma2: { ar: "المشحمة 2", en: "Al-Mashma 2" },
+    sevenGirls: { ar: "السبع بنات", en: "Al-Saba' Banat" },
+    club23: { ar: "نادي 23 يوليو", en: "July 23 Club" },
   };
   let language = localStorage.getItem("goldenBoyLanguage") === "en" ? "en" : "ar";
   let isAdmin = false;
   let applications = [];
   let reviews = [];
-  const filters = { status: "", sport: "", search: "" };
+  const filters = { status: "", branch: "", sport: "", search: "" };
 
   function text(key) {
     return translations[language][key];
@@ -84,6 +89,8 @@
     document.querySelectorAll("[data-ar][data-en]").forEach((element) => {
       element.innerHTML = element.dataset[language];
     });
+    populateSportFilter();
+    populateBranchFilter();
     document.getElementById("language-toggle").textContent = language === "ar" ? "EN / ع" : "ع / EN";
     document.title = language === "ar" ? "الإدارة | أكاديمية جولدن بوي" : "Admin | Golden Boy Academy";
     renderApplications();
@@ -108,12 +115,27 @@
   }
   function populateSportFilter() {
     const select = document.getElementById("application-sport-filter");
+    const selected = select.value;
+    select.replaceChildren(new Option(language === "ar" ? "كل الألعاب" : "All sports", ""));
     Object.entries(sports).forEach(([id, name]) => {
       const option = document.createElement("option");
       option.value = id;
       option.textContent = name[language];
       select.append(option);
     });
+    select.value = selected;
+  }
+  function populateBranchFilter() {
+    const select = document.getElementById("application-branch-filter");
+    const selected = select.value;
+    select.replaceChildren(new Option(language === "ar" ? "كل الفروع" : "All branches", ""));
+    Object.entries(branches).forEach(([id, name]) => {
+      const option = document.createElement("option");
+      option.value = id;
+      option.textContent = name[language];
+      select.append(option);
+    });
+    select.value = selected;
   }
   async function checkAdmin() {
     const panel = document.getElementById("admin-auth-panel");
@@ -168,6 +190,7 @@
     if (!list || !isAdmin) return;
     const rows = applications.filter((app) =>
       (!filters.status || filters.status === app.status)
+      && (!filters.branch || filters.branch === app.branch)
       && (!filters.sport || filters.sport === app.sport)
       && (!filters.search || `${app.child_name} ${app.parent_name} ${app.phone}`.toLowerCase().includes(filters.search.toLowerCase())));
     document.getElementById("application-count").textContent = `${rows.length} ${language === "ar" ? "طلب" : "applications"}`;
@@ -189,8 +212,9 @@
         const created = new Date(app.created_at);
         const date = Number.isNaN(created.getTime()) ? app.created_at : new Intl.DateTimeFormat(language === "ar" ? "ar-EG" : "en-US", { dateStyle: "medium", timeStyle: "short" }).format(created);
         const whatsapp = `https://wa.me/${whatsappNumber(app.phone)}?text=${encodeURIComponent(text("approvedMessage"))}`;
+        const branchName = branches[app.branch]?.[language] || app.branch;
         return `<article class="application-card">
-          <div class="application-top"><div><h3>${escapeHtml(app.child_name)}</h3><div class="subline">${escapeHtml(app.parent_name)} • ${escapeHtml(sportName)} • ${escapeHtml(branches[app.branch] || app.branch)}</div><div class="timestamp">${escapeHtml(text("submitted"))}: ${escapeHtml(date)}</div></div><span class="status ${escapeHtml(app.status)}">${escapeHtml(text(app.status))}</span></div>
+          <div class="application-top"><div><h3>${escapeHtml(app.child_name)}</h3><div class="subline">${escapeHtml(app.parent_name)} • ${escapeHtml(sportName)} • ${escapeHtml(branchName)}</div><div class="timestamp">${escapeHtml(text("submitted"))}: ${escapeHtml(date)}</div></div><span class="status ${escapeHtml(app.status)}">${escapeHtml(text(app.status))}</span></div>
           <div class="application-details">
             <span>${escapeHtml(text("phone"))}: ${escapeHtml(app.phone)}</span><span>${escapeHtml(text("nationalId"))}: ${escapeHtml(app.national_id)}</span><span>${escapeHtml(text("age"))}: ${escapeHtml(app.age)}</span><span>${escapeHtml(text("birthDate"))}: ${escapeHtml(app.birth_date || "—")}</span><span>${escapeHtml(text("group"))}: ${escapeHtml(app.training_group || app.proposed_session || "—")}</span><span>${escapeHtml(text("experience"))}: ${app.previous_experience ? text("yes") : text("no")}</span><span>${escapeHtml(text("payment"))}: ${escapeHtml(app.payment_method || "—")}</span><span>${escapeHtml(text("reference"))}: ${escapeHtml(app.payment_reference || "—")}</span>
           </div><div class="application-files">${files}</div>
@@ -212,10 +236,6 @@
       event.preventDefault();
       const data = new FormData(form);
       const email = String(data.get("email")).trim().toLowerCase();
-      if (email !== adminEmail) {
-        message(language === "ar" ? "هذا البريد غير مخول للدخول إلى لوحة الأونر." : "This email is not authorized to access the owner portal.", true);
-        return;
-      }
       const { error } = await client.auth.signInWithPassword({
         email,
         password: String(data.get("password")),
@@ -235,10 +255,6 @@
       const data = new FormData(form);
       const email = String(data.get("email")).trim().toLowerCase();
       const password = String(data.get("password"));
-      if (email !== adminEmail) {
-        message(language === "ar" ? "إنشاء حساب لوحة الإدارة مسموح للبريد المعتمد فقط." : "Only the authorized owner email can register for this admin portal.", true);
-        return;
-      }
       if (!email || password.length < 8) {
         message(language === "ar" ? "أدخل بريدًا صحيحًا وكلمة مرور من 8 أحرف على الأقل." : "Enter an email and a password of at least 8 characters.", true);
         return;
@@ -318,6 +334,10 @@
       filters.sport = event.target.value;
       renderApplications();
     });
+    document.getElementById("application-branch-filter").addEventListener("change", (event) => {
+      filters.branch = event.target.value;
+      renderApplications();
+    });
     document.getElementById("application-search").addEventListener("input", (event) => {
       filters.search = event.target.value.trim();
       renderApplications();
@@ -325,7 +345,6 @@
   }
 
   setupTheme();
-  populateSportFilter();
   localize();
   if (!client) {
     document.getElementById("admin-dashboard").hidden = true;

@@ -10,6 +10,7 @@
   <link rel="icon" type="image/jpeg" href="assets/golden-boy-logo.jpeg">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="supabase-config.js"></script>
+  <script defer src="snowfall.js"></script>
   <script defer src="admin.js"></script>
 </head>
 <body>
@@ -39,8 +40,9 @@
       <section id="admin-dashboard" hidden>
         <div class="application-toolbar"><div><h2 data-ar="طلبات التسجيل" data-en="Applications">طلبات التسجيل</h2><p class="muted" id="application-count"></p></div><button class="button button-ghost button-small" id="admin-signout" type="button" data-ar="تسجيل الخروج" data-en="Sign out">تسجيل الخروج</button></div>
         <div class="schedule-filters">
-          <label><span data-ar="الحالة" data-en="Status">الحالة</span><select id="application-status-filter"><option value="">كل الحالات</option><option value="pending">قيد المراجعة</option><option value="approved">مقبول</option><option value="rejected">مرفوض</option></select></label>
-          <label><span data-ar="اللعبة" data-en="Sport">اللعبة</span><select id="application-sport-filter"><option value="">كل الألعاب</option></select></label>
+          <label><span data-ar="الحالة" data-en="Status">الحالة</span><select id="application-status-filter"><option value="" data-ar="كل الحالات" data-en="All statuses">كل الحالات</option><option value="pending" data-ar="قيد المراجعة" data-en="Pending review">قيد المراجعة</option><option value="approved" data-ar="مقبول" data-en="Approved">مقبول</option><option value="rejected" data-ar="مرفوض" data-en="Rejected">مرفوض</option></select></label>
+          <label><span data-ar="الفرع" data-en="Branch">الفرع</span><select id="application-branch-filter"><option value="" data-ar="كل الفروع" data-en="All branches">كل الفروع</option></select></label>
+          <label><span data-ar="اللعبة" data-en="Sport">اللعبة</span><select id="application-sport-filter"><option value="" data-ar="كل الألعاب" data-en="All sports">كل الألعاب</option></select></label>
           <label><span data-ar="بحث بالاسم أو الهاتف" data-en="Search name or phone">بحث بالاسم أو الهاتف</span><input id="application-search" type="search"></label>
         </div>
         <div id="applications-list" class="application-list"></div>
