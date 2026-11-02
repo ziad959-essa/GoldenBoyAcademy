@@ -5,6 +5,8 @@
   const STORAGE_BUCKET = "player-private";
   const LANGUAGE_KEY = "goldenBoyLanguage";
   const THEME_KEY = "goldenBoyTheme";
+  const SUBSCRIPTION_PRICE = 500;
+  const ONLINE_PAYMENT_DISCOUNT_RATE = 0.2;
   const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
   const MAX_DOCUMENT_SIZE = 8 * 1024 * 1024;
   const supabaseClient = supabaseConfig?.url && supabaseConfig?.anonKey && window.supabase
@@ -281,17 +283,26 @@
     const copyMessage = document.getElementById("payment-copy-message");
     const referenceField = document.getElementById("payment-reference-field");
     const receiptField = document.getElementById("payment-receipt-field");
+    const priceSummary = document.getElementById("payment-price-summary");
+    const originalPrice = document.getElementById("payment-original-price");
+    const discountAmount = document.getElementById("payment-discount-amount");
+    const finalAmount = document.getElementById("payment-final-amount");
     const receiptInput = form.elements.paymentReceipt;
     const receiptRequiredMarker = document.getElementById("payment-receipt-required-marker");
-    if (!method || !destination || !value || !copyButton || !copyMessage || !referenceField || !receiptField || !receiptInput || !receiptRequiredMarker) return;
+    if (!method || !destination || !value || !copyButton || !copyMessage || !referenceField || !receiptField || !priceSummary || !originalPrice || !discountAmount || !finalAmount || !receiptInput || !receiptRequiredMarker) return;
 
     function updateDestination() {
       const selectedDestination = destinations[method.value];
       const electronicPaymentSelected = Boolean(selectedDestination);
+      const discount = Math.round(SUBSCRIPTION_PRICE * ONLINE_PAYMENT_DISCOUNT_RATE);
       destination.hidden = !selectedDestination;
       value.textContent = selectedDestination ? "010 24667991" : "";
       copyButton.dataset.copyValue = selectedDestination || "";
       copyMessage.textContent = "";
+      priceSummary.hidden = !electronicPaymentSelected;
+      originalPrice.textContent = String(SUBSCRIPTION_PRICE);
+      discountAmount.textContent = String(discount);
+      finalAmount.textContent = String(SUBSCRIPTION_PRICE - discount);
       referenceField.hidden = !electronicPaymentSelected;
       receiptField.hidden = !electronicPaymentSelected;
       receiptInput.required = electronicPaymentSelected;

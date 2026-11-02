@@ -149,6 +149,12 @@ textarea { resize: vertical; }
 .payment-destination-value { color: var(--text); font-size: 13px; font-weight: 700; letter-spacing: .04em; user-select: all; }
 .payment-destination .button { min-height: 34px; }
 .payment-copy-message { grid-column: 1/-1; min-height: 1em; color: var(--muted); font-size: 9px; }
+.payment-price-summary { display: grid; gap: 8px; margin-top: 9px; padding: 12px; border: 1px solid rgba(245,196,93,.3); border-radius: 12px; background: linear-gradient(135deg,rgba(245,196,93,.1),rgba(245,196,93,.035)); }
+.payment-price-summary[hidden] { display: none; }
+.payment-price-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 10px; }
+.payment-price-row strong { color: var(--text); font-size: 11px; white-space: nowrap; }
+.payment-price-total { margin-top: 2px; padding-top: 9px; border-top: 1px solid rgba(245,196,93,.25); color: var(--text); font-weight: 700; }
+.payment-price-total strong { color: var(--lime); font-size: 16px; }
 #payment-receipt-required-marker { color: var(--orange); font-weight: 700; }
 .custom-session-field[hidden] { display: none; }
 .form-notice { margin: 16px 0; padding: 12px 14px; border: 1px solid rgba(245,196,93,.2); border-radius: 12px; background: rgba(245,196,93,.055); color: #f1dfb8; font-size: 10px; }
